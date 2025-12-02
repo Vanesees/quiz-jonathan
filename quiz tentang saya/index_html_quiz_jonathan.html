@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kuis Tentang Jonathan</title>
+<style>
+ body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+ #quizContainer, #resultBox, #adminPanel { display:none; }
+ .question { background:white; padding:15px; border-radius:10px; margin-bottom:15px; }
+</style>
+</head>
+<body>
+<h1>Kuis Tentang Jonathan</h1>
+<div id="startScreen">
+  <label>Masukkan Nama Anda:</label><br>
+  <input id="usernameInput" /><br><br>
+  <button id="startBtn">Mulai Kuis</button>
+</div>
+<div id="quizContainer"></div>
+<div id="resultBox"></div>
+<div id="adminPanel"></div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+const QUESTIONS = [
+  {q:"Saya berasal dari?",a:["Makassar","Medan","Ambon","Kupang"],c:"Makassar"},
+  {q:"Mata pelajaran favorit saya?",a:["TIK/Programming","IPS","Mandarin","Biologi"],c:"TIK/Programming"},
+  {q:"Saya suka bekerja secara?",a:["Individu","Kelompok"],c:"Individu"},
+  {q:"Hobi saya?",a:["Main game","Futsal","Bernyanyi","Corel draw"],c:"Main game"},
+  {q:"Saya suka nonton?",a:["Anime","Kartun","Berita","Drama korea"],c:"Anime"},
+  {q:"Guru favorit saya?",a:["Guru Mandarin","Guru Matematika","Guru Penjas"],c:"Guru Mandarin"},
+  {q:"Saya mahir di bidang?",a:["Programming","Editing","Basket"],c:"Programming"},
+  {q:"Olahraga favorit saya?",a:["Jalan pagi","Renang","Badminton"],c:"Jalan pagi"},
+  {q:"Makanan favorit saya?",a:["Bakso","Sate","Burger"],c:"Bakso"},
+  {q:"Karakter favorit saya?",a:["Anya Forger","Gojo","Naruto"],c:"Anya Forger"}
+];
+function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5);} 
+const startBtn=document.getElementById("startBtn");
+const quiz=document.getElementById("quizContainer");
+const resultBox=document.getElementById("resultBox");
+const admin=document.getElementById("adminPanel");
+startBtn.addEventListener("click",()=>{
+  const user=document.getElementById("usernameInput").value.trim();
+  if(!user) return alert("Isi nama dulu!");
+  window.USER=user;
+  document.getElementById("startScreen").style.display="none";
+  buildQuiz();
+});
+function buildQuiz(){
+ quiz.innerHTML="";
+ const frag=document.createDocumentFragment();
+ shuffle(QUESTIONS).forEach((item,i)=>{
+   const div=document.createElement("div");
+   div.className="question";
+   div.innerHTML=`<b>${i+1}. ${item.q}</b><br>`;
+   shuffle(item.a).forEach(opt=>{
+     div.innerHTML+=`<label><input type='radio' name='q${i}' value="${opt}"> ${opt}</label><br>`;
+   });
+   frag.appendChild(div);
+ });
+ quiz.appendChild(frag);
+ quiz.style.display="block";
+ const btn=document.createElement("button");
+ btn.textContent="Selesai";
+ btn.onclick=submitQuiz;
+ quiz.appendChild(btn);
+}
+function submitQuiz(){
+ let score=0;
+ let idx=0;
+ const userAns=[];
+ document.querySelectorAll('.question').forEach(div=>{
+   const checked=div.querySelector('input:checked');
+   const q=QUESTIONS[idx];
+   if(checked && checked.value===q.c) score++;
+   userAns.push({question:q.q,answer:checked?checked.value:"-",correct:q.c});
+   idx++;
+ });
+ const opinion=prompt("Pendapat anda tentang Jonathan?");
+ const entry={name:window.USER,score,opinion,answers:userAns};
+ const all=JSON.parse(localStorage.getItem("quizData")||"[]");
+ all.push(entry);
+ localStorage.setItem("quizData",JSON.stringify(all));
+ resultBox.innerHTML=`<h2>Hasil</h2>Skor: ${score}/10<br>Terima kasih!`;
+ resultBox.style.display="block";
+ if(window.USER==="jonathan12") updateAdmin();
+}
+function updateAdmin(){
+ const all=JSON.parse(localStorage.getItem("quizData")||"[]");
+ admin.style.display="block";
+ admin.innerHTML="<h2>Panel Admin</h2>" + "<pre>"+JSON.stringify(all,null,2)+"</pre>";
+}
+});
+</script>
+</body>
+</html>
